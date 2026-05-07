@@ -716,7 +716,7 @@
     <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Import</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRulings(event)">
     <button class="btn btn-ghost" onclick="showView('requests')">
-      💬 Topic Requests <span class="pending-badge" id="requestCount">0</span>
+      💬 Pending Requests <span class="pending-badge" id="requestCount">0</span>
     </button>
     <button class="btn btn-ghost" onclick="showView('pending')">
       ⏳ Pending Review <span class="pending-badge" id="pendingCount">0</span>
@@ -1033,7 +1033,7 @@ function getSeedData() {
       "status": "Published",
       "entityTypes": ["C-Corp","S-Corp","SM-LLC","Partnership","Sole Prop"],
       "treatments": {
-        "general": "Travel Meals (while traveling overnight) - 50% deduction\nEmployee or owner travel that requires the individual to be away long enough that overnight stay would be typical.\n\nNote: Some clients may have a specific \"Travel - Meals\" account. Please code this account if available. Otherwise, Meals (50%)."
+        "general": "Travel Meals (while traveling overnight) - 50% deduction\nEmployee or owner travel that requires the individual to be away long enough that overnight stay would be typical.\n\nNote: Some clients may have a specific \"Travel - Meals\" account. Please code to this account if available. Otherwise, code to Meals (50%)."
       },
       "caveats": ["Lunch with customer on your road trip, no business discussed: Customer's meal (0%); Traveling employee (50%)"],
       "flagged": false,
@@ -1048,11 +1048,11 @@ function getSeedData() {
       "status": "Published",
       "entityTypes": ["C-Corp","S-Corp","SM-LLC","Partnership","Sole Prop"],
       "treatments": {
-        "general": "Deductibility depends on WHO attended the meal and WHETHER genuine business is discussed.\n\nSCENARIO A — Client, vendor, or business associate meeting at a restaurant, business luncheon, or other venue: 50% deductible when business is discussed AND an employee or owner is present. Code to Meals (50% Deduction).\n\nSCENARIO B — Food provided at the office or off-site during an employee only working lunch/dinner meal: 0% deductible in 2026. Code to Meals (0% Deduction). This includes, but is not limited to, meals for employees working overtime and lunch ordered for staff meetings.\n\nIf you are unsure which scenario applies, note the situation on the Month-to-Month or escalate through normal process for review."
+        "general": "Deductibility depends on WHO attended the meal and WHETHER genuine business is discussed.\n\nSCENARIO A — Client, vendor, or business associate meeting at a restaurant, business luncheon, or other venue; 50% deductible when business is discussed AND an employee or owner is present. Code to Meals (50% Deduction).\n\nSCENARIO B — Food provided at the office or off-site during an employee only working lunch/dinner meal: 0% deductible in 2026. Code to Meals (0% Deduction). This includes, but is not limited to, meals for employees working overtime and lunch ordered for staff meetings.\n\nIf you are unsure which scenario applies, note the situation on the Month-to-Month or escalate through normal process for review."
       },
       "caveats": [
         "A \"quiet business meal\" where no business is actually discussed is 0% regardless of location.",
-        "The lavish or extravagant cost of meals is 0% regardless of business purpose.",
+        "The lavish or extravagant cost portion of meals is 0% regardless of business purpose.",
         "A customer meal where no employee or owner is present (e.g., a gift meal) is 0%.",
         "Entertainment (tickets, golf, sporting events, cover charges, parking at entertainment venues) is 0% since 2018. If a meal occurs at an entertainment event, it is only 50% deductible if separately itemized on the receipt — bundled charges are 0%."
       ],
@@ -1085,7 +1085,7 @@ function getSeedData() {
       "status": "Published",
       "entityTypes": ["C-Corp","S-Corp","SM-LLC","Partnership","Sole Prop"],
       "treatments": {
-        "general": "100% deductible when the event is a recreational or social activity primarily for the benefit of all employees — not limited to owners, shareholders, or select personnel. Common examples: annual holiday party, summer company picnic, retirement lunch. This exception is unchanged by the 2026 IRC §274(o) phaseout and is specifically confirmed as 100% deductible in Baker Tilly's 2026 guidance.\n\nCode to Meals (50% Deduction) and note \"employee event — 100%\" in the transaction memo so the tax preparer can apply the correct treatment on the return."
+        "general": "100% deductible when the event is a recreational or social activity primarily for the benefit of all employees — not limited to owners, shareholders, or select personnel. Common examples: annual holiday party, summer company picnic, retirement lunch. This exception is unchanged by the 2026 IRC §274(o) phaseout.\n\nCode to Meals (50% Deduction) and note \"employee event — 100%\" in the description field so the tax preparer can apply the correct treatment on the return."
       },
       "caveats": [
         "Must be open to all employees and primarily for their benefit — events limited to owners, shareholders, or management only do not qualify.",
@@ -1106,18 +1106,42 @@ function getSeedData() {
       "entityTypes": ["C-Corp","S-Corp","SM-LLC","Partnership","Sole Prop"],
       "treatments": {
         "C-Corp": "Deductible at the corporate level on Form 1120, Schedule A. Limited to 10% of taxable income before the deduction; excess carries forward up to 5 years. Code to the Charitable Contributions expense account.",
-        "S-Corp": "Not deductible at the S-Corp entity level. Flows through to shareholders on Schedule K-1 (Box 12A) for deduction on their personal return. Book to Charitable Contributions, typically a subaccount under Owner Distributions. The tax preparer will handle the personal-return treatment.",
+        "S-Corp": "Not deductible at the S-Corp entity level. Flows through to shareholders on Schedule K-1 (Box 12A) for deduction on their personal return. Book to Charitable Contributions, typically a subaccount under Owner Distributions.",
         "SM-LLC": "Same treatment as Sole Prop. Not a business deduction. Book to Charitable Donations, usually a subaccount under Owner Draw so it flows to the owner's personal return.",
         "Partnership": "Flows through to partners via Schedule K-1 (Box 13A). Not deducted at the entity level. Book to Charitable Donations account, usually a subaccount under partner equity draw accounts.",
-        "Sole Prop": "Not deductible on Schedule C. Book to the Charitable Donations account, usually a subaccount under Owner Draw. The tax preparer will handle the personal deduction."
+        "Sole Prop": "Not deductible on Schedule C. Book to the Charitable Donations account, usually a subaccount under Owner Draw."
       },
       "caveats": [
-        "Sponsorships where the business receives advertising value in return may be deductible as advertising rather than a charitable contribution — intent and structure matter. If unclear, ask client if advertising or other benefit was received in return for the donation. It is possible that a portion of the \"charitable donation\" value can be a split coding and expensed as advertising, meal, or other business expense, and the amount above the claimed value is a charitable donation."
+        "Sponsorships where the business receives advertising value in return may be deductible as advertising rather than a charitable contribution — intent and structure matter. If unclear, ask client if advertising or other benefit was received in return for the donation. It is possible that a portion of the \"charitable donation\" value can be split and expensed as advertising, meal, or other business expense, with the amount above the claimed value treated as a charitable donation."
       ],
       "flagged": true,
-      "flagNote": "For S-Corps, SM-LLCs, Partnerships, and Sole Props: the contribution has been booked to Owner Draw/Distributions subaccount for Charitable Contributions equity account — not as a business expense.",
+      "flagNote": "For S-Corps, SM-LLCs, Partnerships, and Sole Props: the contribution has been booked to the Owner Draw/Distributions subaccount for Charitable Contributions — not as a business expense.",
       "citations": "IRC §170, IRC §1363(b), IRS Pub 526",
       "verified": "2026-05-06"
+    },
+    {
+      "id": "owner-health-ins-001",
+      "title": "Owner Health Insurance — By Business Type",
+      "category": "Owner Health Insurance",
+      "status": "Published",
+      "entityTypes": ["C-Corp","S-Corp","SM-LLC","Partnership","Sole Prop"],
+      "treatments": {
+        "C-Corp": "The C-Corp can pay directly, reimburse the owner, or include family coverage. The premium is a deductible business expense to the corporation and is generally a non-taxable fringe benefit to the employee-owner. C-Corps have the cleanest treatment of all entity types.\n\nCode to: Employee Benefits / Health Insurance Expense.\n\nWatch: Nondiscrimination rules apply — potential benefit plan issues if only owners benefit.",
+        "S-Corp": "The S-Corp deducts the insurance expense, but the premium must be included in the shareholder-employee's W-2 Box 1 wages (not Social Security or Medicare wages). The owner then takes the self-employed health insurance deduction on Form 1040.\n\nThe policy should generally be in the S-Corp's name or paid directly by the business — reimbursement to the employee is not the preferred structure. COBRA coverage does not qualify.\n\nCode to: Health Insurance Expense or Shareholder Benefits.\n\nImportant: The premium amounts must be added to W-2 at year-end. Notify Reviewer so amounts are captured in payroll reporting. If not properly included on the W-2, the deduction can be jeopardized.",
+        "SM-LLC": "There is no separate tax entity, so premiums paid from the business bank account are treated as Owner Draw — not a business expense. The owner claims the self-employed health insurance deduction on their personal return.\n\nCode to: Owner Draw / Equity Distribution, or a Health Insurance Owner Benefit subaccount under Owner Draw.",
+        "Partnership": "Partner health insurance is generally treated as guaranteed payments — deductible by the partnership and included in the partner's distributive share. The partner then claims the self-employed health insurance deduction personally.\n\nShould flow through guaranteed payments or the partner compensation structure. Improper treatment can distort partner basis and cause reporting inconsistencies.\n\nCode to: Guaranteed Payment — Partner Benefit (P&L Expense account).",
+        "Sole Prop": "The sole proprietor and owner are the same taxpayer, so premiums are not a business expense on Schedule C. The owner takes the self-employed health insurance deduction on Form 1040 (adjustment to income), subject to earned income limitations.\n\nCode to: Owner Draw / Equity, or an Owner Health Insurance subaccount under Owner Draw."
+      },
+      "caveats": [
+        "Before coding, confirm: (1) Who owns the policy? (2) Who is insured? (3) Which entity is paying? (4) Is the owner on payroll? (5) For S-Corps — what is the owner's ownership percentage?",
+        "S-Corp only: 2% shareholders are subject to special rules. Premiums must appear on W-2 Box 1 or the deduction is at risk. Notify Reviewer at year-end.",
+        "SM-LLC, Partnership, and Sole Prop: the deduction is personal, not at the business level — even if premiums are paid from the business bank account.",
+        "C-Corp only: nondiscrimination rules apply if the benefit is provided only to owner-employees."
+      ],
+      "flagged": true,
+      "flagNote": "S-Corp clients: health insurance premiums paid by the business must be added to the shareholder-employee's W-2 Box 1 at year-end. This has been coded to Health Insurance Expense / Shareholder Benefits. Notify Reviewer to ensure payroll reporting captures this amount.",
+      "citations": "IRC §106, IRC §162(l), IRC §1372, IRS Notice 2008-1",
+      "verified": "2026-05-07"
     }
   ];
 }
