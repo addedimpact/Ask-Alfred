@@ -713,16 +713,6 @@
   </div>
   <div class="header-actions">
     <button class="btn btn-ghost" onclick="exportRulings()">⬇ Export</button>
-    <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Import</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importRulings(event)">
-    <button class="btn btn-ghost" onclick="showView('requests')">
-      💬 Pending Requests <span class="pending-badge" id="requestCount">0</span>
-    </button>
-    <button class="btn btn-ghost" onclick="showView('pending')">
-      ⏳ Pending Review <span class="pending-badge" id="pendingCount">0</span>
-    </button>
-    <button class="btn btn-ghost" onclick="openRequestModal()">? Ask a Question</button>
-    <button class="btn btn-gold" onclick="openAddModal()">+ Add Ruling</button>
   </div>
 </header>
 
@@ -782,6 +772,11 @@
     <div class="sidebar-item" data-category="Owner Tax Payments" onclick="filterCategory('Owner Tax Payments', this)">Owner Tax Payments</div>
     <div class="sidebar-item" data-category="Owner Personal Expenses" onclick="filterCategory('Owner Personal Expenses', this)">Owner Personal Expenses</div>
     <div class="sidebar-item" data-category="Home Office" onclick="filterCategory('Home Office', this)">Home Office</div>
+
+    <div style="margin-top:auto;padding:20px 20px 8px;border-top:1px solid rgba(255,255,255,0.08);margin-top:24px">
+      <div style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:8px">Admin</div>
+      <div class="sidebar-item" style="padding-left:0;font-size:12px;color:rgba(255,255,255,0.35)" onclick="openAddModal()">+ Draft New Entry</div>
+    </div>
   </nav>
 
   <!-- MAIN -->
@@ -977,33 +972,6 @@
   </div>
 </div>
 
-<!-- TOPIC REQUEST MODAL -->
-<div class="modal-overlay" id="requestModal">
-  <div class="modal confirm-modal" style="max-width:520px">
-    <div class="modal-header">
-      <div class="modal-title">Request a Topic</div>
-      <button class="modal-close" onclick="closeModal('requestModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p class="confirm-message" style="margin-bottom:16px">Can't find what you're looking for? Submit a topic request and Amanda will review it.</p>
-      <div class="form-group">
-        <label class="form-label">Your Name *</label>
-        <input type="text" class="form-input" id="req_name" placeholder="e.g. Linette">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Topic or Question *</label>
-        <textarea class="form-textarea" id="req_question" rows="4" placeholder="Describe the situation or transaction you need guidance on. Include the client entity type if relevant."></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <div></div>
-      <div class="modal-footer-right">
-        <button class="btn btn-outline" onclick="closeModal('requestModal')">Cancel</button>
-        <button class="btn btn-gold" onclick="submitRequest()">Submit Request</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1147,78 +1115,30 @@ function getSeedData() {
   ];
 }
 
-// ─── REQUESTS STORE ───────────────────────────────────────────────────────────
-const REQUESTS_KEY = 'ai_requests';
-
-function loadRequests() {
-  try { return JSON.parse(localStorage.getItem(REQUESTS_KEY)) || []; }
-  catch { return []; }
-}
-
-function saveRequests(reqs) {
-  localStorage.setItem(REQUESTS_KEY, JSON.stringify(reqs));
-}
-
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let rulings = loadRulings();
-let requests = loadRequests();
 let activeCategory = 'all';
 let searchQuery = '';
 let editingId = null;
 let deletingId = null;
-let pendingView = false;
-let requestsView = false;
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
-  updatePendingCount();
-
-  // REQUESTS VIEW
-  if (requestsView) {
-    const list = document.getElementById('rulingsList');
-    const count = document.getElementById('resultsCount');
-    if (requests.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><h3>No topic requests</h3><p>Your team hasn't submitted any requests yet.</p></div>`;
-      count.textContent = '';
-      return;
-    }
-    count.textContent = `${requests.length} topic request${requests.length !== 1 ? 's' : ''}`;
-    list.innerHTML = requests.map(req => `
-      <div class="ruling-card">
-        <div class="ruling-card-header" style="cursor:default">
-          <div class="ruling-title-row">
-            <div class="ruling-title">${escHtml(req.question)}</div>
-            <div class="ruling-meta">
-              <span class="tag tag-category">From: ${escHtml(req.name)}</span>
-              <span class="tag tag-status-pending">${req.date}</span>
-            </div>
-          </div>
-          <button class="btn btn-outline" style="flex-shrink:0;font-size:12px" onclick="dismissRequest('${req.id}')">Dismiss</button>
-        </div>
-      </div>`).join('');
-    return;
-  }
-
   let filtered = rulings;
 
-  if (pendingView) {
-    filtered = rulings.filter(r => r.status === 'Pending Review');
-  } else {
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(r => r.category === activeCategory);
-    }
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(r =>
-        r.title.toLowerCase().includes(q) ||
-        r.category.toLowerCase().includes(q) ||
-        (r.treatments.general || '').toLowerCase().includes(q) ||
-        Object.values(r.treatments).some(v => v.toLowerCase().includes(q)) ||
-        (r.caveats || []).some(c => c.toLowerCase().includes(q)) ||
-        (r.citations || '').toLowerCase().includes(q)
-      );
-    }
-    filtered = filtered.filter(r => r.status !== 'Pending Review' || pendingView);
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(r => r.category === activeCategory);
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(r =>
+      r.title.toLowerCase().includes(q) ||
+      r.category.toLowerCase().includes(q) ||
+      (r.treatments.general || '').toLowerCase().includes(q) ||
+      Object.values(r.treatments).some(v => v.toLowerCase().includes(q)) ||
+      (r.caveats || []).some(c => c.toLowerCase().includes(q)) ||
+      (r.citations || '').toLowerCase().includes(q)
+    );
   }
 
   const list = document.getElementById('rulingsList');
@@ -1228,19 +1148,17 @@ function render() {
     list.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">📋</div>
-        <h3>${pendingView ? 'No pending rulings' : 'No rulings found'}</h3>
-        <p>${pendingView ? 'All submitted rulings have been reviewed.' : 'Try a different search term or category, or add a new ruling.'}</p>
+        <h3>No entries found</h3>
+        <p>Try a different search term or category.</p>
       </div>`;
     count.textContent = '';
     return;
   }
 
-  const total = rulings.filter(r => r.status !== 'Pending Review').length;
-  count.textContent = pendingView
-    ? `${filtered.length} pending review`
-    : (searchQuery || activeCategory !== 'all')
-      ? `${filtered.length} of ${total} ruling${total !== 1 ? 's' : ''}`
-      : `${total} ruling${total !== 1 ? 's' : ''}`;
+  const total = rulings.length;
+  count.textContent = (searchQuery || activeCategory !== 'all')
+    ? `${filtered.length} of ${total} entr${total !== 1 ? 'ies' : 'y'}`
+    : `${total} entr${total !== 1 ? 'ies' : 'y'}`;
 
   list.innerHTML = filtered.map(r => renderCard(r)).join('');
 }
@@ -1336,7 +1254,6 @@ function renderCard(r) {
         ${citationsSection}
         <div class="ruling-actions">
           <button class="btn btn-outline" onclick="openEditModal('${r.id}')">✏️ Edit</button>
-          ${r.status === 'Pending Review' ? `<button class="btn btn-gold" onclick="publishRuling('${r.id}')">✓ Publish</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -1352,68 +1269,23 @@ function toggleCard(id) {
 // ─── SEARCH & FILTER ──────────────────────────────────────────────────────────
 function handleSearch() {
   searchQuery = document.getElementById('searchInput').value.trim();
-  pendingView = false;
   render();
 }
 
+// ─── SEARCH & FILTER ──────────────────────────────────────────────────────────
 function filterCategory(cat, el) {
   activeCategory = cat;
   searchQuery = '';
-  pendingView = false;
   document.getElementById('searchInput').value = '';
   document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
   render();
 }
 
-function showView(view) {
-  pendingView = false;
-  requestsView = false;
-  searchQuery = '';
-  document.getElementById('searchInput').value = '';
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  if (view === 'pending') pendingView = true;
-  if (view === 'requests') requestsView = true;
-  render();
-}
-
-// ─── TOPIC REQUESTS ───────────────────────────────────────────────────────────
-function openRequestModal() {
-  document.getElementById('req_name').value = '';
-  document.getElementById('req_question').value = '';
-  document.getElementById('requestModal').classList.add('open');
-}
-
-function submitRequest() {
-  const name = document.getElementById('req_name').value.trim();
-  const question = document.getElementById('req_question').value.trim();
-  if (!name) { showToast('Please enter your name.'); return; }
-  if (!question) { showToast('Please describe the topic or question.'); return; }
-  const req = {
-    id: 'req' + Date.now(),
-    name,
-    question,
-    date: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
-  };
-  requests.unshift(req);
-  saveRequests(requests);
-  closeModal('requestModal');
-  updateRequestCount();
-  showToast('Request submitted. Amanda will review it.');
-}
-
-function dismissRequest(id) {
-  requests = requests.filter(r => r.id !== id);
-  saveRequests(requests);
-  updateRequestCount();
-  render();
-  showToast('Request dismissed.');
-}
-
 // ─── MODAL ────────────────────────────────────────────────────────────────────
 function openAddModal() {
   editingId = null;
-  document.getElementById('modalTitle').textContent = 'Add New Ruling';
+  document.getElementById('modalTitle').textContent = 'Draft New Entry';
   clearForm();
   document.getElementById('f_status').value = 'Published';
   document.getElementById('modalDeleteBtn').innerHTML = '';
@@ -1424,7 +1296,7 @@ function openEditModal(id) {
   const r = rulings.find(x => x.id === id);
   if (!r) return;
   editingId = id;
-  document.getElementById('modalTitle').textContent = 'Edit Ruling';
+  document.getElementById('modalTitle').textContent = 'Edit Entry';
   populateForm(r);
   document.getElementById('modalDeleteBtn').innerHTML =
     `<button class="btn btn-danger" onclick="promptDelete('${id}')">🗑 Delete</button>`;
@@ -1531,12 +1403,7 @@ function saveRuling() {
   saveRulings(rulings);
   closeModal('editModal');
   render();
-  showToast(editingId ? 'Ruling updated.' : 'Ruling added.');
-}
-
-function publishRuling(id) {
-  const r = rulings.find(x => x.id === id);
-  if (r) { r.status = 'Published'; saveRulings(rulings); render(); showToast('Ruling published.'); }
+  showToast(editingId ? 'Entry updated. Export to send to Amanda.' : 'Entry drafted. Export to send to Amanda.');
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
@@ -1551,23 +1418,10 @@ function confirmDelete() {
   saveRulings(rulings);
   closeModal('confirmModal');
   render();
-  showToast('Ruling deleted.');
+  showToast('Entry removed from this session.');
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
-function updatePendingCount() {
-  const n = rulings.filter(r => r.status === 'Pending Review').length;
-  document.getElementById('pendingCount').textContent = n;
-  document.getElementById('pendingCount').style.display = n > 0 ? 'inline' : 'none';
-  updateRequestCount();
-}
-
-function updateRequestCount() {
-  const n = requests.length;
-  document.getElementById('requestCount').textContent = n;
-  document.getElementById('requestCount').style.display = n > 0 ? 'inline' : 'none';
-}
-
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1601,27 +1455,6 @@ function exportRulings() {
 }
 
 // ─── IMPORT ───────────────────────────────────────────────────────────────────
-function importRulings(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if (!Array.isArray(imported)) throw new Error('Invalid format');
-      rulings = imported;
-      saveRulings(rulings);
-      render();
-      showToast(`Imported ${imported.length} entries successfully.`);
-    } catch {
-      showToast('Import failed — please use a valid Ask Alfred export file.');
-    }
-    // Reset input so the same file can be re-imported if needed
-    event.target.value = '';
-  };
-  reader.readAsText(file);
-}
-
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 render();
 </script>
