@@ -949,6 +949,7 @@
     <div class="modal-footer">
       <div id="modalDeleteBtn"></div>
       <div class="modal-footer-right">
+        <span style="font-size:11px;color:var(--text-muted);align-self:center">Changes are session-only. Export & send to Amanda to publish.</span>
         <button class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
         <button class="btn btn-gold" onclick="saveRuling()">Save Ruling</button>
       </div>
@@ -1008,20 +1009,20 @@
 
 <script>
 // ─── DATA STORE ───────────────────────────────────────────────────────────────
-// Rulings are stored in localStorage so they persist across sessions.
-// Key: 'ai_rulings'
+// Entries are hardcoded in getSeedData() below.
+// To update entries: edit getSeedData(), save the file, upload to GitHub.
+// Local storage is NOT used for rulings — all team members always see
+// the same entries from the file.
 
-const STORAGE_KEY = 'ai_rulings';
 const ENTITY_TYPES = ['C-Corp', 'S-Corp', 'SM-LLC', 'Partnership', 'Sole Prop'];
 
 function loadRulings() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || getSeedData();
-  } catch { return getSeedData(); }
+  return getSeedData();
 }
 
 function saveRulings(rulings) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(rulings));
+  // No-op: entries are managed in the file, not local storage.
+  // Use Export to send your current entries to Amanda for embedding.
 }
 
 function getSeedData() {
