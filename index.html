@@ -922,12 +922,12 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Tax Preparer Note</label>
+        <label class="form-label">Special Notes</label>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <label class="checkbox-row"><input type="checkbox" id="f_flagged"> Mark this entry with a tax preparer note</label>
+          <label class="checkbox-row"><input type="checkbox" id="f_flagged"> Mark this entry with a special note</label>
         </div>
-        <textarea class="form-textarea" id="f_flag_note" rows="2" placeholder="Describe what the tax preparer should be aware of. Note how the transaction has been coded in the COA so they can locate it."></textarea>
-        <div class="form-hint">Do not instruct clients to retain documentation here — that is their responsibility. Focus on how the transaction was booked and what the tax preparer needs to know.</div>
+        <textarea class="form-textarea" id="f_flag_note" rows="2" placeholder="Note anything the team should be aware of — how the transaction was coded, exceptions, or anything that needs attention at year-end."></textarea>
+        <div class="form-hint">Focus on how the transaction was booked and what anyone reviewing the books should know.</div>
       </div>
 
       <div class="form-group">
@@ -1089,6 +1089,27 @@ function getSeedData() {
       "verified": "2026-05-06"
     },
     {
+      "id": "scorp-retirement-plans-001",
+      "title": "Owner Retirement Contributions — S-Corp (>2% Shareholder)",
+      "category": "Owner Retirement Contributions",
+      "status": "Published",
+      "entityTypes": ["S-Corp"],
+      "treatments": {
+        "S-Corp": "This entry covers S-Corp owners who are >2% shareholders. Treatment varies by plan type.\n\n── PERSONAL PLANS (no business entry needed) ──\n\nTraditional IRA / Roth IRA: Personal transactions. No business bookkeeping entry required.\n\n── EMPLOYER-SPONSORED PLANS ──\n\nSEP IRA (Traditional): Employer contribution is a deductible business expense. Does NOT flow through payroll — paid directly to the plan custodian. The contribution does not appear on the W-2. Code to: Retirement Benefits / SEP IRA Employer Contribution.\n2026 limit: Lesser of 25% of W-2 wages or $70,000.\n\nSEP IRA — Roth [SECURE 2.0, effective 2023]: Employer contribution is still a business expense, but unlike the traditional SEP, the Roth SEP contribution must be included in the employee's W-2 as taxable compensation. Requires payroll coordination. Code to: Retirement Benefits / SEP IRA Employer Contribution. Notify Reviewer — the contribution amount must be added to W-2 at year-end.\n2026 limit: Lesser of 25% of W-2 wages or $70,000.\n\nSIMPLE IRA — Employee Deferral: Payroll deduction required. Reported on W-2, Box 12 / Code S. Code through payroll.\n2026 limit: $16,500. Age 50+ catch-up: $3,500. Ages 60–63 enhanced catch-up: $5,250.\n\nSIMPLE IRA — Employer Match: Employer contribution expense on books. Paid directly to plan custodian — not through payroll. Does not appear on W-2. Code to: Retirement Benefits / SIMPLE IRA Employer Match.\n\nSolo 401(k) — Employee Deferral: Payroll deduction required. Reported on W-2, Box 12 / Code D. Owner must have W-2 wages from the S-Corp before making any deferral — contributions cannot be based on K-1 distributions.\n2026 limit: $24,500. Age 50+ catch-up: $8,000. Ages 60–63 enhanced catch-up: $11,250.\n\nSolo 401(k) — Employer Contribution: Employer contribution expense on books. Does not flow through payroll. Up to 25% of W-2 wages. Code to: Retirement Benefits / 401(k) Employer Contribution.\n2026 combined (employee + employer) limit: $72,000.\n\nTraditional 401(k) — Employee Deferral (with employees): Payroll deduction required. W-2 Box 12 / Code D.\n2026 limit: $24,500. Age 50+ catch-up: $8,000. Ages 60–63 enhanced catch-up: $11,250.\n\nTraditional 401(k) — Employer Match (with employees): Employer contribution expense on books. Not through payroll.\n2026 combined (employee + employer) limit: $72,000."
+      },
+      "caveats": [
+        "S-Corp owner must receive reasonable W-2 compensation from the S-Corp before making any Solo 401(k) deferral or employer contribution. K-1 distributions do not count as compensation for contribution purposes.",
+        "Roth SEP IRA contributions (SECURE 2.0) must be added to W-2 as taxable compensation — verify that your payroll provider supports this treatment before proceeding.",
+        "Contribution limits shown are 2026 IRS amounts. Confirm current limits at irs.gov before applying.",
+        "Ages 60–63 enhanced catch-up (SECURE 2.0, effective 2025): participants may contribute the greater of $5,000 or 150% of the regular catch-up limit, indexed for inflation. This applies to both 401(k) and SIMPLE IRA plans and flows through payroll.",
+        "For plans with employees (non-Solo 401(k), SIMPLE IRA): nondiscrimination and coverage rules apply — consult the tax preparer or plan administrator if the owner is the only participant."
+      ],
+      "flagged": true,
+      "flagNote": "Employee deferrals (Solo 401(k), SIMPLE IRA, traditional 401(k)) are coded through payroll and appear in W-2 Box 12. Employer contributions are coded as a Retirement Benefits expense — not through payroll. For Roth SEP IRA contributions, the employer contribution amount must be added to W-2 as taxable compensation at year-end.",
+      "citations": "IRC §402(g), IRC §408(k), IRC §408(p), IRC §415; IRS Publication 560; SECURE 2.0 Act of 2022 (P.L. 117-328)",
+      "verified": "2026-06-12"
+    },
+    {
       "id": "owner-health-ins-001",
       "title": "Owner Health Insurance — By Business Type",
       "category": "Owner Health Insurance",
@@ -1140,6 +1161,8 @@ function render() {
       (r.citations || '').toLowerCase().includes(q)
     );
   }
+
+  filtered.sort((a, b) => a.title.localeCompare(b.title));
 
   const list = document.getElementById('rulingsList');
   const count = document.getElementById('resultsCount');
@@ -1217,10 +1240,10 @@ function renderCard(r) {
 
   const flagSection = r.flagged ? `
     <div class="ruling-section">
-      <div class="ruling-section-label">Tax Preparer Note</div>
+      <div class="ruling-section-label">Special Notes</div>
       <div class="tax-flag-box">
         <span class="tax-flag-icon">📋</span>
-        <span>${escHtml(r.flagNote || 'Flag this item for tax preparer review.')}</span>
+        <span>${escHtml(r.flagNote || '')}</span>
       </div>
     </div>` : '';
 
@@ -1240,7 +1263,7 @@ function renderCard(r) {
           <div class="ruling-meta">
             <span class="tag tag-category">${escHtml(r.category)}</span>
             <span class="tag ${statusClass}">${r.status}</span>
-            ${r.flagged ? '<span class="tag tag-flag">📋 Tax Preparer Note</span>' : ''}
+            ${r.flagged ? '<span class="tag tag-flag">📋 Special Notes</span>' : ''}
             ${entityTags}
           </div>
           <div class="ruling-verified">Verified: ${verifiedStr}</div>
